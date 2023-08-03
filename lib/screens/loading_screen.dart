@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:weather/services/location.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -9,20 +11,43 @@ class LoadingScreen extends StatefulWidget {
 class _LoadingScreenState extends State<LoadingScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getLocation();
+    print("this line of code triggered");
   }
 
   void getLocation() async {
-    // LocationPermission permission = await Geolocator.requestPermission();
-    // LocationPermission permission1 = await Geolocator.checkPermission();
+    Location location = Location();
+    await location.getCurrentLocation();
+    print(location.latitude);
+    print(location.longitude);
+    getData(location.latitude, location.longitude); // Call getData here
+  }
 
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
-    // bool isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+  void getData(double? latitude, double? longitude) async {
+    const String apikey = "68ac566293fc128750766f3d4d84a411";
 
-    print(position);
+    final String apiUrl =
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apikey';
+
+    Uri url = Uri.parse(apiUrl);
+
+    http.Response response = await http.get(url);
+    if (response.statusCode == 200) {
+      String data = response.body;
+
+      var decodedData = jsonDecode(data);
+
+      double temperature = decodedData(data)['main']['temp'];
+      int condition = decodedData(data)['weather'][0]['id'];
+      String cityName = decodedData(data)['name'];
+
+      print(temperature);
+      print(condition);
+      print(cityName);
+    } else {
+      print(response.statusCode);
+    }
   }
 
   @override
