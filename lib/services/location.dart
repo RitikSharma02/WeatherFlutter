@@ -1,5 +1,7 @@
-import 'dart:ffi';
+import 'package:geolocator/geolocator.dart';
 
+import 'dart:ffi';
+import 'package:weather/services/networking.dart';
 import 'package:geolocator/geolocator.dart';
 
 class Location {
@@ -8,47 +10,59 @@ class Location {
 
   Future<void> getCurrentLocation() async {
     try {
+      LocationPermission permission;
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
       latitude = position.latitude;
       longitude = position.longitude;
     } catch (e) {
+      var permission = await Geolocator.requestPermission();
+
       print(e);
     }
   }
 }
 
+// class Location {
+//   double? latitude;
+//   double? longitude;
+//   Future<void> getCurrentLocation() async {
+//     try {
+//       bool serviceEnabled;
+//       LocationPermission permission;
 //
-// Future<Position> getCurrentLocationCheckingPermissions() async {
-//   bool serviceEnabled;
-//   LocationPermission locationPermission;
+//       serviceEnabled = await Geolocator.isLocationServiceEnabled();
+//       if (!serviceEnabled) {
+//         // Handle case when location services are not enabled on the device.
+//         return;
+//       }
 //
-//   // Test if location services are enabled.
-//   serviceEnabled = await Geolocator.isLocationServiceEnabled();
-//   if (!serviceEnabled) {
-//     // Location services are not enabled don't continue
-//     // accessing the position and request users of the
-//     // App to enable the location services.
-//     throw Exception('Location services are disabled. Please activate them.');
-//   } else {
-//     locationPermission = await Geolocator.checkPermission();
-//     if (LocationPermission.unableToDetermine == locationPermission) {
-//       throw Exception(
-//           'Unable to determine if location permissions are enabled.');
-//     } else if (LocationPermission.denied == locationPermission ||
-//         LocationPermission.deniedForever == locationPermission) {
-//       throw Exception(
-//           'Location permissions are denied: ' + locationPermission.toString());
-//     }
+//       permission = await Geolocator.checkPermission();
+//       if (permission == LocationPermission.deniedForever) {
+//         // Handle case when the user has previously denied location permissions permanently.
+//         return;
+//       }
 //
-//     if (LocationPermission.whileInUse == locationPermission ||
-//         LocationPermission.always == locationPermission) {
+//       if (permission == LocationPermission.denied) {
+//         // Request location permissions from the user.
+//         permission = await Geolocator.requestPermission();
+//         if (permission != LocationPermission.whileInUse &&
+//             permission != LocationPermission.always) {
+//           // Handle case when the user denies location permissions.
+//           return;
+//         }
+//       }
+//
 //       Position position = await Geolocator.getCurrentPosition(
-//         desiredAccuracy: LocationAccuracy.lowest,
+//         desiredAccuracy: LocationAccuracy.high,
 //       );
-//       return position;
+//
+//       latitude = position.latitude;
+//       longitude = position.longitude;
+//     } catch (e) {
+//       print(e);
 //     }
 //   }
-//   throw Exception('Location permissions are not granted.');
 // }
+//
